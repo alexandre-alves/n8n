@@ -1,5 +1,5 @@
 
-[![logo n8n svg](https://docs.n8n.io/_images/n8n-docs-icon.svg](https://docs.n8n.io)
+![logo n8n svg](https://docs.n8n.io/_images/n8n-docs-icon.svg)
 
 Para apenas testar use rode sem ssl
 Docker Run

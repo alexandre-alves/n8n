@@ -1,7 +1,7 @@
 
 ![logo n8n svg](https://docs.n8n.io/_images/n8n-docs-icon.svg)
 
-Para apenas testar use rode sem ssl
+Para apenas testar rode sem ssl
 <p>Docker Run</p>
 
 ~~~

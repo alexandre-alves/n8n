@@ -1,5 +1,3 @@
-
-![logo n8n svg](https://docs.n8n.io/_images/n8n-docs-icon.svg)
 [![logo n8n svg](https://docs.n8n.io/_images/n8n-docs-icon.svg)](https://n8n.io)
 
 Para apenas testar rode sem ssl

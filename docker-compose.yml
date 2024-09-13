@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+  # Serviço Traefik
+  traefik:
+    image: "traefik"
+    restart: sempre # Reinicia o container automaticamente em caso de falha
+    command:
+      - "--api=true" # Habilita a API do Traefik
+      - "--api.insecure=true" # AVISO: Somente habilite a API insegura em ambientes de desenvolvimento
+      - "--providers.docker=true" # Integra com o Docker para gerenciar rotas automaticamente
+      - "--providers.docker.exposedbydefault=false" # Por padrão, não expõe serviços Docker automaticamente
+      - "--entrypoints.web.address=:80" # Define a porta 80 para o ponto de entrada "web" (HTTP)
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure" # Redireciona tráfego HTTP para HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https" # Define o esquema de redirecionamento como HTTPS
+      - "--entrypoints.websecure.address=:443" # Define a porta 443 para o ponto de entrada "websecure" (HTTPS)
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true" # Habilita geração de certificados TLS pelo Letsencrypt
+      - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}" # Email para registro no Letsencrypt (substitua por seu email)
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json" # Local para armazenamento dos certificados Letsencrypt
+    ports:
+      - "80:80" # Mapeia a porta 80 do host para a porta 80 do container Traefik (HTTP)
+      - "443:443" # Mapeia a porta 443 do host para a porta 443 do container Traefik (HTTPS)
+    volumes:
+      - traefik_data:/letsencrypt # Monta o volume externo traefik_data para armazenar dados Letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Monta o socket Docker (somente leitura) para Traefik gerenciar serviços
+
+  # Serviço n8n
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    restart: sempre # Reinicia o container automaticamente em caso de falha
+    ports:
+      - "127.0.0.1:5678:5678" # Mapeia a porta 5678 do host para a porta 5678 do container n8n (acesso local)
+    labels:
+      - traefik.enable=true # Habilita o gerenciamento de rotas n8n pelo Traefik
+      - traefik.http.routers.n8n.rule=Host(`<span class="math-inline">\{SUBDOMAIN\}\.</span>{DOMAIN_NAME}`) # Define a regra de roteamento baseada no subdomínio
+      - traefik.http.routers.n8n.tls=true # Habilita HTTPS para o roteador n8n
+      - traefik.http.routers.n8n.entrypoints=web,websecure # Define pontos de entrada para n8n (HTTP e HTTPS)
+      - traefik.http.routers.n8n.certresolver=mytlschallenge # Define o resolver de certificados Letsencrypt para n8n
+      - traefik.http.middlewares.n8n.headers.SSLRedirect=true # Habilita redirecionamento para HTTPS no middleware n8n
+      - traefik.http.middlewares.n8n.headers.STSSeconds=315360000 # Define a duração do cabeçalho Strict-Transport-Security (HSTS)
+      - traefik.http.middlewares.n8n.headers.browserXSSFilter=true # Habilita filtro XSS no navegador para n8n
+      - traefik.http.middlewares.n8n.headers.contentTypeNosniff=true # Desabilita detecção de tipo de conteúdo inseguro
+      - traefik.http.middlewares.n8n.headers.forceSTSHeader=true # Força o cabeçalho Strict-Transport-Security (HSTS)
+      - traefik.http.middlewares.n8n.headers.SSLHost=${DOMAIN_NAME} # Defini o dominio 

@@ -4,6 +4,7 @@ $ docker run -it --rm --name n8n -p 5678:5678 -e N8N_SECURE_COOKIE=false -v n8n_
 
 Use o docker-compose.yml e defina suas variavesi de ambiente:
 <p>.env</p>
+
 ~~~~
 # Nome do domínio principal a ser servido (ex: example.com)
 DOMAIN_NAME=example.com
